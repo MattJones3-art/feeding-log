@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Feeding Log">
+<meta name="theme-color" content="#fdf0f3">
+<title>Feeding Log</title>
+<style>
+:root{--bg:#fdf0f3;--card:#fff;--ink:#4a2f3a;--mute:#9a7684;--rose:#e58aa5;--rose2:#f7c9d6;--soft:#fbe3ea;--line:#f3d3dd;--ok:#7bb394;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2a1a21;--card:#3a2530;--ink:#fbe8ee;--mute:#c9a3b2;--rose:#e58aa5;--rose2:#5a3342;--soft:#4a2d3a;--line:#5a3a49;--ok:#8cc7a6}}
+:root[data-theme="dark"]{--bg:#2a1a21;--card:#3a2530;--ink:#fbe8ee;--mute:#c9a3b2;--rose:#e58aa5;--rose2:#5a3342;--soft:#4a2d3a;--line:#5a3a49;--ok:#8cc7a6}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px}
+main{max-width:480px;margin:0 auto;padding:16px 16px 48px}
+h1{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:400;font-size:28px;margin:8px 0 14px;text-align:center}
+.card{background:var(--card);border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:0 4px 18px rgba(229,138,165,.15)}
+.next{text-align:center;background:linear-gradient(160deg,var(--rose2),var(--soft))}
+.next small{color:var(--mute);letter-spacing:.08em;text-transform:uppercase;font-size:12px}
+.next .big{font-family:Georgia,serif;font-size:42px;margin:4px 0 0}
+.next .sub{color:var(--mute);margin-top:2px}
+.next.due .big{color:var(--rose)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
+.chip{border:1.5px solid var(--rose2);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:15px}
+.chip.on{background:var(--rose);border-color:var(--rose);color:#fff}
+.seg{display:flex;background:var(--soft);border-radius:999px;padding:4px;margin-bottom:14px}
+.seg button{flex:1;border:0;background:none;color:var(--mute);font:inherit;font-size:16px;padding:10px;border-radius:999px}
+.seg button.on{background:var(--card);color:var(--rose);font-weight:600;box-shadow:0 2px 8px rgba(229,138,165,.25)}
+.row{display:grid;grid-template-columns:84px 1fr 1fr;gap:8px;align-items:end;margin-bottom:12px}
+label{display:block;font-size:12px;color:var(--mute);margin-bottom:4px}
+select,input{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:14px;padding:10px 8px;min-height:44px}
+.tw{display:flex;gap:6px}
+.now{flex:none;border:0;background:var(--soft);color:var(--rose);border-radius:12px;padding:0 10px;font:inherit;font-size:13px;font-weight:600}
+.dur{text-align:right;color:var(--mute);margin:-4px 2px 12px;font-size:14px}
+.dur b{color:var(--rose);font-size:16px}
+.save{width:100%;border:0;background:var(--rose);color:#fff;font:inherit;font-size:18px;font-weight:600;padding:14px;border-radius:999px;margin-top:4px}
+.hide{display:none}
+.stepper{display:flex;align-items:center;gap:12px;justify-content:center;margin:6px 0 14px}
+.stepper button{width:48px;height:48px;border-radius:50%;border:0;background:var(--soft);color:var(--rose);font-size:26px}
+.stepper input{width:110px;text-align:center;font-size:26px}
+.sum{display:flex;gap:8px;margin-bottom:14px}
+.sum div{flex:1;background:var(--card);border-radius:18px;padding:10px;text-align:center;font-size:12px;color:var(--mute)}
+.sum b{display:block;font-size:20px;color:var(--ink)}
+h2{font-family:Georgia,serif;font-weight:400;font-size:18px;margin:18px 4px 8px;color:var(--mute)}
+.item{display:flex;gap:12px;align-items:center;background:var(--card);border-radius:18px;padding:12px 14px;margin-bottom:8px}
+.item .t{font-weight:700;min-width:74px}
+.item .d{flex:1;font-size:14px;color:var(--mute)}
+.item .d b{color:var(--ink)}
+.x{border:0;background:none;color:var(--mute);font-size:18px;padding:6px}
+.x.sure{color:#fff;background:var(--rose);border-radius:10px;font-size:13px;padding:6px 10px}
+.empty{text-align:center;color:var(--mute);padding:20px}
+</style>
+</head>
+<body>
+<main>
+<h1>Feeding Log 🌸</h1>
+
+<div class="card next" id="next">
+  <small>Next feeding</small>
+  <div class="big" id="nextT">—</div>
+  <div class="sub" id="nextS">Log a feeding to start</div>
+  <div class="chips" id="chips"></div>
+  <div class="chips"><span style="color:var(--mute);align-self:center;font-size:14px">Every</span>
+  <input id="ivl" type="number" step="0.25" min="0.5" max="12" style="width:80px;text-align:center"><span style="color:var(--mute);align-self:center;font-size:14px">hours</span></div>
+</div>
+
+<div class="card">
+  <div class="seg"><button id="bBreast" class="on">Breast</button><button id="bBottle">Bottle</button></div>
+
+  <div id="breast">
+    <div class="row"><div><label>1st side</label><select id="sd1"><option>Left</option><option>Right</option></select></div>
+      <div><label>Start</label><div class="tw"><input type="time" id="s1"><button class="now" data-f="s1">Now</button></div></div>
+      <div><label>Finish</label><div class="tw"><input type="time" id="e1"><button class="now" data-f="e1">Now</button></div></div></div>
+    <div class="dur" id="d1"></div>
+    <div class="row"><div><label>2nd side</label><select id="sd2"><option>Left</option><option selected>Right</option></select></div>
+      <div><label>Start</label><div class="tw"><input type="time" id="s2"><button class="now" data-f="s2">Now</button></div></div>
+      <div><label>Finish</label><div class="tw"><input type="time" id="e2"><button class="now" data-f="e2">Now</button></div></div></div>
+    <div class="dur" id="d2"></div>
+    <div class="dur">Total <b id="dt">0 min</b></div>
+  </div>
+
+  <div id="bottle" class="hide">
+    <label>Time</label><div class="tw" style="margin-bottom:14px"><input type="time" id="bt"><button class="now" data-f="bt">Now</button></div>
+    <label style="text-align:center">Ounces</label>
+    <div class="stepper"><button id="ozM">−</button><input type="number" id="oz" step="0.5" min="0" value="3" inputmode="decimal"><button id="ozP">+</button></div>
+  </div>
+
+  <button class="save" id="save">Save feeding</button>
+</div>
+
+<div class="sum" id="sum"></div>
+<div id="list"></div>
+</main>
+
+<script>
+var KEY='feedlog:v1', S={entries:[],interval:2.5}, type='breast', pending=null;
+try{var r=localStorage.getItem(KEY); if(r){var p=JSON.parse(r); if(p&&p.entries)S.entries=p.entries; if(p&&p.interval)S.interval=p.interval;}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function $(i){return document.getElementById(i)}
+function pad(n){return n<10?'0'+n:''+n}
+function hhmm(d){return pad(d.getHours())+':'+pad(d.getMinutes())}
+function fmt(ms){return new Date(ms).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
+function mins(a,b){var d=Math.round((b-a)/60000);return d<0?d+1440:d}
+function strMins(a,b){if(!a||!b)return null;var x=a.split(':'),y=b.split(':');var d=(+y[0]*60+ +y[1])-(+x[0]*60+ +x[1]);return d<0?d+1440:d}
+function hrs(h){return h%1===0?h+'':h.toFixed(2).replace(/0$/,'')}
+
+/* interval */
+var opts=[1.5,2,2.5,3,3.5,4];
+function drawChips(){
+  $('chips').innerHTML=opts.map(function(o){return '<button class="chip'+(o===S.interval?' on':'')+'" data-h="'+o+'">'+hrs(o)+'h</button>'}).join('');
+  $('ivl').value=S.interval;
+}
+$('chips').onclick=function(e){var h=e.target.getAttribute('data-h');if(h){S.interval=+h;save();drawChips();drawNext()}};
+$('ivl').onchange=function(){var v=parseFloat(this.value);if(v>=0.5&&v<=12){S.interval=v;save();drawChips();drawNext()}};
+
+/* next feeding */
+function lastStart(){var m=0;S.entries.forEach(function(e){if(e.start>m)m=e.start});return m}
+function drawNext(){
+  var ls=lastStart(), box=$('next');
+  if(!ls){$('nextT').textContent='—';$('nextS').textContent='Log a feeding to start';box.classList.remove('due');return}
+  var nx=ls+S.interval*3600000, diff=Math.round((nx-Date.now())/60000);
+  $('nextT').textContent=fmt(nx);
+  var a=Math.abs(diff), h=Math.floor(a/60), m=a%60, t=(h?h+'h ':'')+m+'m';
+  if(diff>0){$('nextS').textContent='in '+t;box.classList.remove('due')}
+  else{$('nextS').textContent=diff===0?'right now':t+' ago — time to feed';box.classList.add('due')}
+}
+
+/* tabs */
+function setType(t){type=t;$('bBreast').classList.toggle('on',t==='breast');$('bBottle').classList.toggle('on',t==='bottle');
+  $('breast').classList.toggle('hide',t!=='breast');$('bottle').classList.toggle('hide',t!=='bottle');
+  if(t==='bottle'&&!$('bt').value)$('bt').value=hhmm(new Date())}
+$('bBreast').onclick=function(){setType('breast')};$('bBottle').onclick=function(){setType('bottle')};
+
+/* Now buttons + live duration */
+document.querySelectorAll('.now').forEach(function(b){b.onclick=function(){$(b.getAttribute('data-f')).value=hhmm(new Date());calc()}});
+['s1','e1','s2','e2'].forEach(function(i){$(i).oninput=calc});
+$('sd1').onchange=function(){$('sd2').value=this.value==='Left'?'Right':'Left'};
+function calc(){
+  var a=strMins($('s1').value,$('e1').value), b=strMins($('s2').value,$('e2').value);
+  $('d1').innerHTML=a!==null?'<b>'+a+' min</b>':'';$('d2').innerHTML=b!==null?'<b>'+b+' min</b>':'';
+  $('dt').textContent=((a||0)+(b||0))+' min';
+}
+$('ozM').onclick=function(){$('oz').value=Math.max(0,(+$('oz').value||0)-0.5)};
+$('ozP').onclick=function(){$('oz').value=(+$('oz').value||0)+0.5};
+
+/* save */
+$('save').onclick=function(){
+  var now=Date.now(), ent;
+  if(type==='breast'){
+    var s1=$('s1').value; if(!s1){$('s1').focus();return}
+    var times=[['sd1','s1','e1'],['sd2','s2','e2']], base=new Date(), x=s1.split(':');
+    base.setHours(+x[0],+x[1],0,0);
+    if(base.getTime()>now+3600000)base.setDate(base.getDate()-1);
+    var day=new Date(base);day.setHours(0,0,0,0);var prev=0,sides=[];
+    times.forEach(function(t){
+      var s=$(t[1]).value,e=$(t[2]).value; if(!s)return;
+      var sm=tm(day,s,prev); prev=sm; var em=null; if(e){em=tm(day,e,prev);prev=em}
+      sides.push({side:$(t[0]).value,s:sm,e:em});
+    });
+    ent={id:now,type:'breast',start:sides[0].s,sides:sides};
+  }else{
+    var bt=$('bt').value||hhmm(new Date()), b=new Date(), y=bt.split(':');
+    b.setHours(+y[0],+y[1],0,0); if(b.getTime()>now+3600000)b.setDate(b.getDate()-1);
+    ent={id:now,type:'bottle',start:b.getTime(),oz:+$('oz').value||0};
+  }
+  S.entries.push(ent);S.entries.sort(function(a,b){return b.start-a.start});save();
+  ['s1','e1','s2','e2'].forEach(function(i){$(i).value=''});$('sd1').value=$('sd1').value;calc();draw();window.scrollTo({top:0,behavior:'smooth'});
+};
+function tm(day,str,prev){var p=str.split(':'),d=new Date(day);d.setHours(+p[0],+p[1],0,0);var m=d.getTime();while(m<prev)m+=864e5;return m}
+
+/* list */
+function dayLabel(ms){var d=new Date(ms),t=new Date();t.setHours(0,0,0,0);var y=new Date(t);y.setDate(y.getDate()-1);var k=new Date(ms);k.setHours(0,0,0,0);
+  if(+k===+t)return 'Today';if(+k===+y)return 'Yesterday';return d.toLocaleDateString([],{weekday:'long',month:'short',day:'numeric'})}
+function total(e){var t=0;e.sides.forEach(function(s){if(s.e)t+=mins(s.s,s.e)});return t}
+function draw(){
+  var tdy=new Date();tdy.setHours(0,0,0,0);var n=0,m=0,o=0;
+  S.entries.forEach(function(e){if(e.start>=+tdy){n++;if(e.type==='breast')m+=total(e);else o+=e.oz}});
+  $('sum').innerHTML='<div><b>'+n+'</b>feedings today</div><div><b>'+m+'</b>nursing min</div><div><b>'+(Math.round(o*10)/10)+'</b>bottle oz</div>';
+  if(!S.entries.length){$('list').innerHTML='<div class="empty">No feedings yet 💗<br>Your log will show up here.</div>';drawNext();return}
+  var h='',last='';
+  S.entries.forEach(function(e){
+    var dl=dayLabel(e.start);if(dl!==last){h+='<h2>'+dl+'</h2>';last=dl}
+    var d;
+    if(e.type==='breast'){
+      d=e.sides.map(function(s){return s.side+' '+(s.e?mins(s.s,s.e)+' min':'…')}).join(' · ')+(e.sides.length>1?' — <b>'+total(e)+' min total</b>':'');
+    }else d='🍼 Bottle — <b>'+e.oz+' oz</b>';
+    h+='<div class="item"><div class="t">'+fmt(e.start)+'</div><div class="d">'+d+'</div><button class="x'+(pending===e.id?' sure':'')+'" data-id="'+e.id+'">'+(pending===e.id?'Delete?':'✕')+'</button></div>';
+  });
+  $('list').innerHTML=h;drawNext();
+}
+$('list').onclick=function(e){var id=e.target.getAttribute('data-id');if(!id)return;id=+id;
+  if(pending===id){S.entries=S.entries.filter(function(x){return x.id!==id});pending=null;save()}else pending=id;draw()};
+
+drawChips();setType('breast');calc();draw();
+setInterval(drawNext,30000);
+</script>
+</body>
+</html>
